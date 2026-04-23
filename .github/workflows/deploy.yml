@@ -1,0 +1,29 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 소스코드 체크아웃
+        uses: actions/checkout@v4
+
+      # [중요] 이 방식은 로그에 echo "" 가 남지 않는 최신 방식입니다.
+      - name: Docker Hub 로그인
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Backend Docker Build & Push
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/yj-backend:latest ./backend
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/yj-backend:latest
+
+      - name: Frontend Docker Build & Push
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/yj-frontend:latest ./frontend
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/yj-frontend:latest
